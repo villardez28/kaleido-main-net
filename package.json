@@ -1,0 +1,25 @@
+{
+  "name": "kaleido-main-net",
+  "version": "0.0.1",
+  "description": "Sample program to retrieve the state reports from the main-net for a permissioned network identified by the Kaleido environment Id",
+  "main": "getenv.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaleido-io/kaleido-main-net.git"
+  },
+  "author": "Azeem Ahmed",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/kaleido-io/kaleido-main-net/issues"
+  },
+  "homepage": "https://github.com/kaleido-io/kaleido-main-net#readme",
+  "dependencies": {
+    "command-line-args": "^5.0.2",
+    "crypto": "^1.0.1",
+    "truffle-contract": "^3.0.5",
+    "web3": "^1.0.0-beta.34"
+  }
+}
