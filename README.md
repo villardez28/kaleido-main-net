@@ -13,8 +13,10 @@ npm install
 
 ### Usage: 
 ```
-node getenv.js --envId <envId> --latest <count>
+node getenv.js --network <rinkeby-net-http-endpoint> --envId <envId> --latest <count>
 ```
+
+``network`` is the main-net or rinkeby net http endpoint (must match the network you chose when provisioning the kaleido environment). If you don't have an endpoint to the main-net handy, you can use [infura](https://infura.io/) to get one. 
 
 ``envId`` is the Kaleido Environment ID (for an environment that has the main-net relay option selected when it was created)
 

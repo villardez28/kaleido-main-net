@@ -2,6 +2,7 @@
 
 const commandLineArgs = require('command-line-args');
 const optionsDefinition = [
+  { name: 'network', alias: 'n', type: String },
   { name: 'envId', alias: 'e', type: String, defaultOption: true },
   { name: 'latest', alias: 'l', type: Number, defaultValue: 1 }
 ];
@@ -77,34 +78,19 @@ const abi = [
       "type": "function"
     }];
 const Arbitrator = contract({abi: abi});
-
-let RINKEBY_ENDPOINT = 'https://rinkeby.infura.io/beY8jKnOlUyfITZP3iO0';
-let web3 = new Web3(RINKEBY_ENDPOINT);
 Web3.providers.HttpProvider.prototype.sendAsync = Web3.providers.HttpProvider.prototype.send;
 
-let readyPromise = new Promise(resolve => {
-  const resolveIfConnected = (resolve) => {
-    web3.eth.net.isListening()
-      .then(() => { console.log(`Connected to ${RINKEBY_ENDPOINT}`); resolve(); })
-      .catch(() => {
-        console.log(`Not connected. Retrying in 5 seconds ...`);
-        setTimeout(() => { resolveIfConnected(resolve); }, 5000);
-      });
-  };
-  resolveIfConnected(resolve);
-});
-
-async function getReports(totalToRetrieveMax) {
+async function getReports(web3, network, envId, totalToRetrieveMax) {
   Arbitrator.setProvider(web3.currentProvider);
   Arbitrator.defaults( { from: '0x081980234ca114ffc7b929f024ef8f4c927b30ae' } );
 
   let arbitrator = await Arbitrator.at('0x35afbaaa24ffb0b360a8c14734bd9a583b092154');
-  let envIdHash = '0x' + crypto.createHash('sha256').update(args.envId).digest().toString('hex');
+  let envIdHash = '0x' + crypto.createHash('sha256').update(envId).digest().toString('hex');
   let reportCount = await arbitrator.getReportCount.call(envIdHash);
   let count = reportCount.toNumber();
   console.log(`Total number of reports: ${count}`);
   console.log(`Total reports to retrieve: ${totalToRetrieveMax}`);
-  for (let idx = count - 1; idx >= 0 && idx >= count - totalToRetrieveMax - 1; --idx) {
+  for (let idx = count - 1; idx >= 0 && idx > count - totalToRetrieveMax - 1; --idx) {
     // retrieve latest report
     let reportIndex = idx;
     let report = await arbitrator.getReportAt.call(envIdHash, reportIndex);
@@ -117,16 +103,41 @@ async function getReports(totalToRetrieveMax) {
   }
 }
 
-const args = commandLineArgs(optionsDefinition);
+async function run() {
+  const args = commandLineArgs(optionsDefinition);
+  let network = args.hasOwnProperty('network') && args.network;
+  if (network && network !== '') {
+    let web3 = new Web3(network);
 
-readyPromise.then(() => {
-  let envId = args.hasOwnProperty('envId') && args.envId;
-  let count = args.hasOwnProperty('latest') && args.latest; 
+    let web3Connected = new Promise(resolve => {
+      const resolveIfConnected = (resolve) => {
+        web3.eth.net.isListening()
+          .then(() => { console.log(`Connected to ${network}`); resolve(); })
+          .catch(() => {
+            console.log(`Not connected. Retrying in 5 seconds ...`);
+            setTimeout(() => { resolveIfConnected(resolve); }, 5000);
+          });
+      };
+      resolveIfConnected(resolve);
+    });
 
-  if (envId && envId !== '') {
-    getReports(count).then(() => {});
+    web3Connected.then(() => {
+      let envId = args.hasOwnProperty('envId') && args.envId;
+      let count = args.hasOwnProperty('latest') && args.latest; 
+    
+      if (envId && envId !== '') {
+        getReports(web3, network, envId, count).then(() => {});
+      }
+      else {
+        console.log('Please specify --envId <envId>');
+      }
+    });
   }
   else {
-    console.log('Please specify --envId <envId>');
+    console.log(`Please specify --network <network>`);
   }
-});
+}
+
+run().catch(e=> console.log(e));
+
+
