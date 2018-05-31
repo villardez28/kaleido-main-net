@@ -22,7 +22,7 @@ node getenv.js --network <rinkeby-net-http-endpoint> --envId <envId> --latest <c
 
 ``latest`` allows you to control the total number of reports to retrieve (defaults to one)
 
-*short-form usage:* ``node getenv.js <envId>`` 
+*short-form usage:* `node getenv.js --network <http-endpoint> <envId>` 
 
 ### Report Format
 Each report contains the following data: 
